@@ -1,0 +1,50 @@
+const int motionPin = 4;  // PIR sensor
+const int buttonPin = 2;  // Button
+const int tempSensorPin = A5;  // Analog pin for simulating temperature sensor
+const int externalLedPin = 8;   // External LED pin
+
+bool motionSensorActive = true;
+
+void setup() {
+  Serial.begin(9600);
+  pinMode(motionPin, INPUT);
+  pinMode(buttonPin, INPUT_PULLUP);
+  pinMode(externalLedPin, OUTPUT);  // External LED
+  attachInterrupt(digitalPinToInterrupt(buttonPin), toggleSensor, FALLING);
+}
+
+void loop() {
+  if (motionSensorActive) {
+    readMotionSensor();
+  } else {
+    readTemperatureSensor();
+  }
+}
+
+void readMotionSensor() {
+  int motionValue = digitalRead(motionPin);
+  Serial.print("Motion: ");
+  Serial.println(motionValue);
+
+  // Update external LED based on motion sensor reading
+  digitalWrite(externalLedPin, motionValue);
+  delay(500);  // Adjust delay as needed
+}
+
+void readTemperatureSensor() {
+  int temperature = analogRead(tempSensorPin);
+  Serial.print("Temperature: ");
+  int mappedTemperature = map(temperature, 0, 1023, -10, 40); // Simulated temperature mapping
+  Serial.println(mappedTemperature);
+
+  // Update external LED based on temperature sensor reading
+  digitalWrite(externalLedPin, mappedTemperature > 20);  // LED on if temperature is above 20 degrees
+  delay(1000);  // Adjust delay as needed
+}
+
+void toggleSensor() {
+  motionSensorActive = !motionSensorActive;
+  Serial.print("Sensor toggled. Active sensor: ");
+  Serial.println(motionSensorActive ? "Motion" : "Temperature");
+  delay(500);  // Debounce the button
+}
